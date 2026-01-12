@@ -7,7 +7,7 @@ export const mockCampaigns: Campaign[] = [
         keywords: ['running', 'shoes', 'summer', 'sale', 'sports'],
         bidAmount: 1.5,
         fund: 100,
-        status: 'active',
+        status: 'on',
         town: 'Warsaw',
         radius: 50,
     }

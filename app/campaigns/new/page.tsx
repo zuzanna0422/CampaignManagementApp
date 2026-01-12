@@ -3,8 +3,8 @@
 import { useSearchParams } from "next/navigation";
 import { keywords } from "@/data/keywords";
 import { towns } from "@/data/towns";
-
-const statuses = ["active", "paused", "ended"] as const;
+import type { Campaign, CampaignStatus } from "@/models/Campaign";
+import { mockCampaigns } from "@/data/mockCampaigns";
 
 export default function NewCampaignPage() {
   const searchParams = useSearchParams();
@@ -15,6 +15,44 @@ export default function NewCampaignPage() {
     if (!Number.isNaN(rawValue) && rawValue < minValue) {
       event.currentTarget.value = String(minValue);
     }
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const stored = localStorage.getItem("campaigns");
+    let campaigns: Campaign[] = [];
+    if (stored) {
+      try {
+        campaigns = JSON.parse(stored) as Campaign[];
+      } catch {
+        campaigns = [];
+      }
+    } else {
+      campaigns = mockCampaigns;
+    }
+
+    const nextId = campaigns.length > 0 ? Math.max(...campaigns.map(c => c.id)) + 1 : 1;
+
+    const keywordsValue = String(formData.get("keywords"));
+    const newCampaign: Campaign = {
+      id: nextId,
+      productId: Number(formData.get("productId") ?? "0"),
+      name: String(formData.get("name") ?? ""),
+      keywords: keywordsValue.split(',').map((k) => k.trim()).filter(Boolean), 
+      bidAmount: Number(formData.get("bidAmount") ?? "0"),
+      fund: Number(formData.get("fund") ?? "0"),
+      status: (formData.get("status") ?? "on") as CampaignStatus,
+      town: String(formData.get("town") ?? ""),
+      radius: Number(formData.get("radius") ?? "0"),
+    };
+
+    campaigns.push(newCampaign);
+    localStorage.setItem("campaigns", JSON.stringify(campaigns));
+    form.reset();
+
   };
 
   return (
@@ -29,8 +67,10 @@ export default function NewCampaignPage() {
           </p>
         </header>
 
-        <form className="flex flex-col gap-6 rounded-2xl border border-black/10 bg-white p-7 shadow-sm sm:p-8">
+        <form className="flex flex-col gap-6 rounded-2xl border border-black/10 bg-white p-7 shadow-sm sm:p-8"
+          onSubmit={handleSubmit}>
           <input name="productId" type="hidden" value={productId} />
+          <input name="status" type="hidden" value="on" />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-2 text-xs font-medium sm:text-sm">
@@ -86,24 +126,6 @@ export default function NewCampaignPage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-2 text-xs font-medium sm:text-sm">
-              Status
-              <select
-                className="rounded-lg border border-black/15 px-3 py-2 text-xs sm:text-sm"
-                name="status"
-                defaultValue=""
-              >
-                <option value="" disabled>
-                  Select status
-                </option>
-                {statuses.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-            </label>
-
             <label className="flex flex-col gap-2 text-xs font-medium sm:text-sm">
               Town
               <select
