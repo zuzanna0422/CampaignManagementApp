@@ -24,7 +24,7 @@ export default function CampaignsList({ campaigns }: CampaignsListProps) {
           <span>-</span>
           <span>{campaign.town}</span>
         </div>
-      ))}
+      ))} 
     </div>
   );
 }
