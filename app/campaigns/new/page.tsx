@@ -1,17 +1,17 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Campaign, CampaignStatus } from "@/models/Campaign";
 import { mockCampaigns } from "@/data/mockCampaigns";
 import { mockUser } from "@/data/mockUser";
 import { useRouter } from "next/navigation";
 import CampaignForm from "@/components/CampaignForm";
-import AccountDetails from "@/components/AccountDetails";
 
-export default function NewCampaignPage() {
-  const router = useRouter();
+function NewCampaignForm() {
   const searchParams = useSearchParams();
   const productId = Number(searchParams.get("productId") ?? "");
+  const router = useRouter();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -56,6 +56,16 @@ export default function NewCampaignPage() {
   };
 
   return (
+    <CampaignForm
+      productId={productId}
+      submitLabel="Create"
+      onSubmit={handleSubmit}
+    />
+  );
+}
+
+export default function NewCampaignPage() {
+  return (
     <div className="min-h-screen bg-white px-1 py-10 text-black sm:px-6 sm:py-12">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
         <header className="space-y-2">
@@ -67,11 +77,9 @@ export default function NewCampaignPage() {
           </p>
         </header>
 
-        <CampaignForm
-          productId={productId}
-          submitLabel="Create"
-          onSubmit={handleSubmit}
-        />
+        <Suspense fallback={<div className="text-xs text-black/60">Loading...</div>}>
+          <NewCampaignForm />
+        </Suspense>
       </div>
     </div>
   );
