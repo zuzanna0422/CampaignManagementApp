@@ -1,12 +1,13 @@
 import type { Campaign } from "@/models/Campaign";
-import { RiEdit2Line, RiDeleteBin6Fill } from "react-icons/ri";
+import { RiEdit2Line, RiCloseLine } from "react-icons/ri";
 
 type CampaignsListProps = {
   campaigns: Campaign[];
   onToggleStatus?: (campaignId: number) => void;
+  onDelete: (campaignId: number) => void;
 };
 
-export default function CampaignsList({ campaigns, onToggleStatus }: CampaignsListProps) {
+export default function CampaignsList({ campaigns, onToggleStatus, onDelete }: CampaignsListProps) {
   if (campaigns.length === 0) {
     return (
       <span className="text-xs text-black/50 sm:text-sm">No campaigns yet</span>
@@ -34,15 +35,22 @@ export default function CampaignsList({ campaigns, onToggleStatus }: CampaignsLi
 
           <span className="font-semibold text-black">{campaign.name}</span>
           <span>-</span>
-          <span>{campaign.status}</span>
+          <span>{campaign.bidAmount}$ bid</span>
+          <span>/</span>
+          <span>{campaign.fund}$ fund</span>
           <span>-</span>
           <span>{campaign.town}</span>
+          <span>-</span>
+          <span>{campaign.radius}km</span>
           <div className="ml-auto flex gap-4">
-            <button type="button" className="text-black/60 hover:text-black sm:text-xs">
+            <button type="button"
+                    className="text-black/60 hover:text-black sm:text-xs">
                 <RiEdit2Line className="h-5 w-5"/>
             </button>
-            <button type="button" className="text-black/60 hover:text-black sm:text-xs">
-                <RiDeleteBin6Fill className="h-5 w-5"/>
+            <button type="button"
+                    onClick={() => onDelete?.(campaign.id)} 
+                    className="text-black/60 hover:text-black sm:text-xs">
+                <RiCloseLine className="h-6 w-6"/>
             </button>
           </div>
         </div>

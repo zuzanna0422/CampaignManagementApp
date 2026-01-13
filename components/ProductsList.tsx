@@ -35,6 +35,18 @@ export default function ProductsList() {
     });
   };
 
+  const deleteCampaign = (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this campaign?")) {
+      return;
+    }
+    setCampaigns((prevCampaigns) => {
+      const updatedCampaigns = prevCampaigns.filter((c) => c.id !== id);
+
+    localStorage.setItem("campaigns", JSON.stringify(updatedCampaigns));
+    return updatedCampaigns;
+  });
+};
+
   return (
     <div className="flex flex-col gap-3">
       {mockProducts.map((product) => {
@@ -58,7 +70,7 @@ export default function ProductsList() {
                 Add campaign
               </Link>
             </div>
-            <CampaignsList campaigns={productCampaigns} onToggleStatus={toggleStatus} />
+            <CampaignsList campaigns={productCampaigns} onToggleStatus={toggleStatus} onDelete={deleteCampaign}/>
           </div>
         );
       })}
