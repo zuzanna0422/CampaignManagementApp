@@ -5,11 +5,11 @@ import { useState } from "react";
 import { mockProducts } from "@/data/mockProducts";
 import { mockCampaigns } from "@/data/mockCampaigns";
 import CampaignsList from "@/components/CampaignsList";
-import type { Campaign } from "@/models/Campaign";
+import type { Campaign, CampaignStatus } from "@/models/Campaign";
 
 export default function ProductsList() {
 
-  const [campaigns] = useState<Campaign[]>(() => {
+  const [campaigns, setCampaigns] = useState<Campaign[]>(() => {
     const stored = localStorage.getItem("campaigns");
     if (stored) {
       try {
@@ -20,6 +20,20 @@ export default function ProductsList() {
     }
     return mockCampaigns;
   });
+
+  const toggleStatus = (id: number) => {
+    setCampaigns((prevCampaigns) => {
+      const updatedCampaign = prevCampaigns.map((c) => {
+        if (c.id === id) {
+          const newStatus: CampaignStatus = c.status === "on" ? "off" : "on";
+          return { ...c, status: newStatus };
+        }
+        return c;
+      });
+      localStorage.setItem("campaigns", JSON.stringify(updatedCampaign));
+      return updatedCampaign;
+    });
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -44,7 +58,7 @@ export default function ProductsList() {
                 Add campaign
               </Link>
             </div>
-            <CampaignsList campaigns={productCampaigns} />
+            <CampaignsList campaigns={productCampaigns} onToggleStatus={toggleStatus} />
           </div>
         );
       })}

@@ -6,9 +6,10 @@ import { towns } from "@/data/towns";
 import type { Campaign, CampaignStatus } from "@/models/Campaign";
 import { mockCampaigns } from "@/data/mockCampaigns";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function NewCampaignPage() {
-
+  const router = useRouter();
   const [keywordInput, setKeywordInput] = useState("");
   const [keywordsList, setKeywordsList] = useState<string[]>([]);
 
@@ -84,7 +85,7 @@ export default function NewCampaignPage() {
     form.reset();
     setKeywordInput("");
     setKeywordsList([]);
-
+    router.push("/products");
   };
 
   return (
