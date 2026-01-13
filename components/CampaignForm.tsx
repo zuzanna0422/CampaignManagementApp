@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Menu, MenuItem, Typeahead } from "react-bootstrap-typeahead";
+import type { TypeaheadRef } from "react-bootstrap-typeahead";
+import "react-bootstrap-typeahead/css/Typeahead.css";
 import { keywords } from "@/data/keywords";
 import { towns } from "@/data/towns";
 import type { Campaign } from "@/models/Campaign";
@@ -22,10 +25,14 @@ export default function CampaignForm({
   secondaryLabel,
   onSecondary
 }: CampaignFormProps) {
+  const typeaheadRef = useRef<TypeaheadRef>(null);
   const [keywordInput, setKeywordInput] = useState("");
   const [keywordsList, setKeywordsList] = useState<string[]>(
-    initialCampaign?.keywords ?? []
+    (initialCampaign?.keywords ?? []).filter((keyword) =>
+      keywords.includes(keyword)
+    )
   );
+  const [keywordsMessage, setKeywordsMessage] = useState("");
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const minValue = Number(event.currentTarget.min || "0");
@@ -35,34 +42,72 @@ export default function CampaignForm({
     }
   };
 
-  const handleKeywordChange = () => {
-    const addKeyword = keywordInput.trim();
+  const addKeywordValue = (value: string) => {
+    const addKeyword = value.trim();
     if (!addKeyword) return;
 
     if (keywordsList.includes(addKeyword)) {
+      typeaheadRef.current?.clear();
       setKeywordInput("");
       return;
     }
 
     setKeywordsList((prev) => [...prev, addKeyword]);
+    setKeywordsMessage("");
+    typeaheadRef.current?.clear();
     setKeywordInput("");
+  };
+
+  const handleKeywordChange = () => {
+    addKeywordValue(keywordInput);
   };
 
   const handleKeywordSubmit = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      handleKeywordChange();
+      const rawValue =
+        event.currentTarget.value ||
+        typeaheadRef.current?.getInput()?.value ||
+        keywordInput;
+      const normalizedInput = rawValue.trim().toLowerCase();
+      if (!normalizedInput) return;
+
+      const suggested = keywords.find((keyword) =>
+        keyword.toLowerCase().includes(normalizedInput)
+      );
+
+      addKeywordValue(suggested ?? rawValue);
     }
+  };
+
+  const handleTypeaheadSelection = (selected: unknown[]) => {
+    const value = selected[0];
+    if (typeof value !== "string") return;
+    setKeywordInput(value);
   };
 
   const handleRemoveKeyword = (index: number) => {
     setKeywordsList((prev) => prev.filter((_, i) => i !== index));
+    if (keywordsList.length === 1) {
+      setKeywordsMessage("");
+    }
+  };
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    if (keywordsList.length === 0) {
+      event.preventDefault();
+      setKeywordsMessage("Please add at least one keyword.");
+      return;
+    }
+
+    setKeywordsMessage("");
+    onSubmit(event);
   };
 
   return (
     <form
       className="flex flex-col gap-6 rounded-2xl border border-black/10 bg-white p-7 shadow-sm sm:p-8"
-      onSubmit={onSubmit}
+      onSubmit={handleFormSubmit}
     >
       <input name="productId" type="hidden" value={productId} />
       <input name="status" type="hidden" value={initialCampaign?.status ?? "on"} />
@@ -84,20 +129,45 @@ export default function CampaignForm({
       <label className="flex flex-col gap-2 text-xs font-medium sm:text-sm">
         Keywords
         <div className="w-full flex gap-2">
-          <input
-            className="flex-1 rounded-lg border border-black/15 px-3 py-2 text-xs sm:text-sm"
+          <Typeahead
+            id="campaign-keywords"
+            options={keywords}
             placeholder={keywords.slice(0, 6).join(", ")}
-            type="text"
-            value={keywordInput}
-            onChange={(e) => setKeywordInput(e.target.value)}
+            onInputChange={setKeywordInput}
+            onChange={handleTypeaheadSelection}
             onKeyDown={handleKeywordSubmit}
+            renderMenu={(results, menuProps) => (
+              <Menu
+                {...menuProps}
+                className={`absolute left-0 right-0 mt-2 w-full rounded-lg border border-black/10 bg-white shadow ${menuProps.className ?? ""}`}
+                style={{ ...menuProps.style, zIndex: 50 }}
+              >
+                {results.map((result, index) => (
+                  <MenuItem
+                    key={typeof result === "string" ? result : result.label}
+                    option={result}
+                    position={index}
+                    className="block px-3 py-2 text-xs sm:text-sm hover:bg-black/5"
+                  >
+                    {typeof result === "string" ? result : result.label}
+                  </MenuItem>
+                ))}
+              </Menu>
+            )}
+            inputProps={{
+              className:
+                "w-full rounded-lg border border-black/15 px-3 py-2 text-xs sm:text-sm",
+              onKeyDown: handleKeywordSubmit
+            }}
+            className="relative w-full"
+            ref={typeaheadRef}
           />
           <button
             type="button"
             className="rounded-lg border border-black/10 bg-black px-3 py-2 text-xs font-semibold text-white transition hover:bg-black/90"
             onClick={handleKeywordChange}
           >
-            Add keyword
+            Add
           </button>
         </div>
         <input name="keywords" type="hidden" value={keywordsList.join(",")} />
@@ -119,6 +189,9 @@ export default function CampaignForm({
               </span>
             ))}
           </div>
+        )}
+        {keywordsMessage && (
+          <span className="text-xs text-red-500">{keywordsMessage}</span>
         )}
       </label>
 
