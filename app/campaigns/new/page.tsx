@@ -3,8 +3,10 @@
 import { useSearchParams } from "next/navigation";
 import type { Campaign, CampaignStatus } from "@/models/Campaign";
 import { mockCampaigns } from "@/data/mockCampaigns";
+import { mockUser } from "@/data/mockUser";
 import { useRouter } from "next/navigation";
 import CampaignForm from "@/components/CampaignForm";
+import AccountDetails from "@/components/AccountDetails";
 
 export default function NewCampaignPage() {
   const router = useRouter();
@@ -45,11 +47,16 @@ export default function NewCampaignPage() {
 
     campaigns.push(newCampaign);
     localStorage.setItem("campaigns", JSON.stringify(campaigns));
+    const storedWallet = Number(
+      localStorage.getItem("walletBalance") ?? mockUser[0].walletBalance
+    );
+    const nextWallet = storedWallet - newCampaign.fund;
+    localStorage.setItem("walletBalance", String(nextWallet));
     router.push("/products");
   };
 
   return (
-    <div className="min-h-screen bg-white px-8 py-10 text-black sm:px-6 sm:py-12">
+    <div className="min-h-screen bg-white px-1 py-10 text-black sm:px-6 sm:py-12">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
         <header className="space-y-2">
           <h1 className="text-xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">

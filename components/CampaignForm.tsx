@@ -7,6 +7,7 @@ import "react-bootstrap-typeahead/css/Typeahead.css";
 import { keywords } from "@/data/keywords";
 import { towns } from "@/data/towns";
 import type { Campaign } from "@/models/Campaign";
+import { mockUser } from "@/data/mockUser";
 
 type CampaignFormProps = {
   productId: number;
@@ -33,13 +34,38 @@ export default function CampaignForm({
     )
   );
   const [keywordsMessage, setKeywordsMessage] = useState("");
+  const [walletBalance] = useState(() => {
+    if (typeof window === "undefined") {
+      return mockUser[0].walletBalance;
+    }
+    const stored = localStorage.getItem("walletBalance");
+    const parsed = Number(stored);
+    return stored && !Number.isNaN(parsed) ? parsed : mockUser[0].walletBalance;
+  });
+  const [fundValue, setFundValue] = useState(
+    Number(initialCampaign?.fund ?? 0)
+  );
+
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const minValue = Number(event.currentTarget.min || "0");
+    const maxValue = Number(event.currentTarget.max || "");
     const rawValue = Number(event.currentTarget.value);
     if (!Number.isNaN(rawValue) && rawValue < minValue) {
       event.currentTarget.value = String(minValue);
     }
+    if (!Number.isNaN(rawValue) && !Number.isNaN(maxValue) && rawValue > maxValue) {
+      event.currentTarget.value = String(maxValue);
+    }
+    if (event.currentTarget.name === "fund") {
+      const normalizedValue = Number(event.currentTarget.value);
+      setFundValue(Number.isNaN(normalizedValue) ? 0 : normalizedValue);
+    }
+  };
+
+  const handleFundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = Number(event.currentTarget.value);
+    setFundValue(Number.isNaN(rawValue) ? 0 : rawValue);
   };
 
   const addKeywordValue = (value: string) => {
@@ -222,12 +248,15 @@ export default function CampaignForm({
               $
             </span>
             <input
-              className="w-full rounded-lg border border-black/15 px-3 py-2 text-xs sm:text-sm pl-8"
+              className={`w-full rounded-lg border border-black/15 px-3 py-2 text-xs sm:text-sm pl-8 ${initialCampaign ? "bg-black/5 text-black/60" : ""}`}
               name="fund"
               min="100"
+              max={walletBalance}
               step="50"
               onBlur={handleBlur}
+              onChange={handleFundChange}
               required
+              disabled={Boolean(initialCampaign)}
               type="number"
               defaultValue={initialCampaign?.fund ?? ""}
             />
@@ -275,6 +304,9 @@ export default function CampaignForm({
           </div>
         </label>
       </div>
+      <p className="text-sm border-t pt-4 text-black/60 sm:text-base">
+        <b>Emeralds balance:</b> {walletBalance} - {fundValue} = {walletBalance - fundValue} 𖢻
+      </p>
       <div className="flex flex-col gap-8 sm:flex-row sm:justify-end pt-2">
         {secondaryLabel && onSecondary && (
           <button
