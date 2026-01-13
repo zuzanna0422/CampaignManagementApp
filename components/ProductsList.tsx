@@ -10,6 +10,9 @@ import type { Campaign, CampaignStatus } from "@/models/Campaign";
 export default function ProductsList() {
 
   const [campaigns, setCampaigns] = useState<Campaign[]>(() => {
+    if (typeof window === "undefined") {
+      return mockCampaigns;
+    }
     const stored = localStorage.getItem("campaigns");
     if (stored) {
       try {

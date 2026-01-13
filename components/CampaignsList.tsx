@@ -1,4 +1,5 @@
 import type { Campaign } from "@/models/Campaign";
+import Link from "next/link";
 import { RiEdit2Line, RiCloseLine } from "react-icons/ri";
 
 type CampaignsListProps = {
@@ -24,7 +25,7 @@ export default function CampaignsList({ campaigns, onToggleStatus, onDelete }: C
           <button
             type="button"
             onClick={() => onToggleStatus?.(campaign.id)}
-            className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+            className={`w-11 rounded-full px-3 py-1 text-xs font-semibold transition ${
                 campaign.status === "on"
                 ? "bg-green-500 text-white"
                 : "bg-black/10 text-black/40"
@@ -42,15 +43,20 @@ export default function CampaignsList({ campaigns, onToggleStatus, onDelete }: C
           <span>{campaign.town}</span>
           <span>-</span>
           <span>{campaign.radius}km</span>
+
           <div className="ml-auto flex gap-4">
-            <button type="button"
-                    className="text-black/60 hover:text-black sm:text-xs">
-                <RiEdit2Line className="h-5 w-5"/>
-            </button>
+            <Link href={`/campaigns/${campaign.id}/edit`}
+                  className="text-black/60 hover:text-black sm:text-xs"
+                  aria-label={`Edit ${campaign.name} campaign`}
+            >
+              <RiEdit2Line className="h-5 w-5"/>
+            </Link>
+
             <button type="button"
                     onClick={() => onDelete?.(campaign.id)} 
-                    className="text-black/60 hover:text-black sm:text-xs">
-                <RiCloseLine className="h-6 w-6"/>
+                    className="text-black/60 hover:text-black sm:text-xs"
+                    aria-label={`Delete ${campaign.name} campaign`}>
+              <RiCloseLine className="h-6 w-6"/>
             </button>
           </div>
         </div>
