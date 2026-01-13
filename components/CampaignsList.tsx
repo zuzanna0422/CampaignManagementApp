@@ -16,16 +16,16 @@ export default function CampaignsList({ campaigns, onToggleStatus, onDelete }: C
   }
 
   return (
-    <div className="space-y-1 text-[10px] text-black/70 sm:text-xs">
+    <div className="space-y-1 text-[9px] text-black/70 sm:text-[11px] lg:text-sm">
       {campaigns.map((campaign) => (
         <div
           key={campaign.id}
-          className="flex items-center gap-1.5 rounded-md border border-black/10 px-2 py-1 text-[10px] sm:text-xs">
+          className="flex items-center gap-1.5 rounded-md border border-black/10 px-2 py-1 text-[9px] sm:text-[11px] lg:text-sm">
 
           <button
             type="button"
             onClick={() => onToggleStatus?.(campaign.id)}
-            className={`w-7 rounded-full px-1 py-0.5 text-[9px] font-semibold leading-none transition ${
+            className={`w-7 rounded-full px-1 py-0.5 text-[8px] font-semibold leading-none transition sm:text-[10px] lg:text-xs ${
                 campaign.status === "on"
                 ? "bg-green-500 text-white"
                 : "bg-black/10 text-black/40"
@@ -48,7 +48,7 @@ export default function CampaignsList({ campaigns, onToggleStatus, onDelete }: C
 
           <div className="ml-auto flex shrink-0 gap-1.5">
             <Link href={`/campaigns/${campaign.id}/edit`}
-                  className="text-black/60 hover:text-black sm:text-xs"
+                  className="text-black/60 hover:text-black"
                   aria-label={`Edit ${campaign.name} campaign`}
             >
               <RiEdit2Line className="h-3.5 w-3.5"/>
@@ -56,7 +56,7 @@ export default function CampaignsList({ campaigns, onToggleStatus, onDelete }: C
 
             <button type="button"
                     onClick={() => onDelete?.(campaign.id)} 
-                    className="text-black/60 hover:text-black sm:text-xs"
+                    className="text-black/60 hover:text-black"
                     aria-label={`Delete ${campaign.name} campaign`}>
               <RiCloseLine className="h-3.5 w-3.5"/>
             </button>
