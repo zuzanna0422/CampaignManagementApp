@@ -1,6 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+
+import { useEffect, useRef, useState } from "react";
 import { Menu, MenuItem, Typeahead } from "react-bootstrap-typeahead";
 import type { TypeaheadRef } from "react-bootstrap-typeahead";
 import "react-bootstrap-typeahead/css/Typeahead.css";
@@ -34,14 +36,18 @@ export default function CampaignForm({
     )
   );
   const [keywordsMessage, setKeywordsMessage] = useState("");
-  const [walletBalance] = useState(() => {
-    if (typeof window === "undefined") {
-      return mockUser[0].walletBalance;
-    }
+  const [walletBalance, setWalletBalance] = useState(
+    mockUser[0].walletBalance
+  );
+
+  useEffect(() => {
     const stored = localStorage.getItem("walletBalance");
     const parsed = Number(stored);
-    return stored && !Number.isNaN(parsed) ? parsed : mockUser[0].walletBalance;
-  });
+    if (stored && !Number.isNaN(parsed)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setWalletBalance(parsed);
+    }
+  }, []);
   const [fundValue, setFundValue] = useState(
     Number(initialCampaign?.fund ?? 0)
   );
@@ -49,7 +55,8 @@ export default function CampaignForm({
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const minValue = Number(event.currentTarget.min || "0");
-    const maxValue = Number(event.currentTarget.max || "");
+    const maxAttr = event.currentTarget.max;
+    const maxValue = maxAttr ? Number(maxAttr) : Number.NaN;
     const rawValue = Number(event.currentTarget.value);
     if (!Number.isNaN(rawValue) && rawValue < minValue) {
       event.currentTarget.value = String(minValue);
